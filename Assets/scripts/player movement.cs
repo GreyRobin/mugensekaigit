@@ -1,49 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class playermovement : MonoBehaviour
 {
-	private CharacterController controller;
-	private Vector3 playerVelocity;
-	private bool groundedPlayer;
-	private float playerSpeed = 2.0f;
-	private float jumpHeight = 1.0f;
-	private float gravityValue = -9.81f;
+	public Rigidbody rb;
+	public float moveSpeed;
+	private Vector2 moveInput;
+	public InputActionReference move;
 
-	private void Start()
+	private void Update()
 	{
-		controller = gameObject.AddComponent<CharacterController>();
+		moveInput = move.action.ReadValue<Vector2>();
 	}
 
-	void Update()
+	private void FixedUpdate()
 	{
-		groundedPlayer = controller.isGrounded;
-		if (groundedPlayer && playerVelocity.y < 0)
-		{
-			playerVelocity.y = 0f;
-		}
-
-		// Horizontal input
-		Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-		move = Vector3.ClampMagnitude(move, 1f); // Optional: prevents faster diagonal movement
-
-		if (move != Vector3.zero)
-		{
-			transform.forward = move;
-		}
-
-		// Jump
-		if (Input.GetButtonDown("Jump") && groundedPlayer)
-		{
-			playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * gravityValue);
-		}
-
-		// Apply gravity
-		playerVelocity.y += gravityValue * Time.deltaTime;
-
-		// Combine horizontal and vertical movement
-		Vector3 finalMove = (move * playerSpeed) + (playerVelocity.y * Vector3.up);
-		controller.Move(finalMove * Time.deltaTime);
+		Vector3 moveDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+		rb.linearVelocity = moveDirection * moveSpeed + new Vector3(0, rb.linearVelocity.y, 0);
 	}
 }
